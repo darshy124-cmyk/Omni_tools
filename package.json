@@ -1,0 +1,19 @@
+{
+  "name": "omnitool-ai",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.12.0",
+  "scripts": {
+    "dev": "pnpm -C apps/web dev",
+    "build": "pnpm -C apps/web build",
+    "lint": "pnpm -C apps/web lint",
+    "test": "pnpm -r test",
+    "smoke": "pnpm -C packages/core smoke",
+    "seed:tools": "node scripts/seed-tools.ts",
+    "seed:admin": "node scripts/seed-admin.ts"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

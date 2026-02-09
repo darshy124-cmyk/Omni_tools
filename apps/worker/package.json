@@ -1,0 +1,21 @@
+{
+  "name": "@omni/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "bullmq": "^5.12.2",
+    "@omni/core": "workspace:*",
+    "@omni/engines": "workspace:*",
+    "@omni/storage": "workspace:*",
+    "ioredis": "^5.4.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.5"
+  }
+}
