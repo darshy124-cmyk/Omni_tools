@@ -1,0 +1,13 @@
+{
+  "name": "@omni/storage",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.682.0",
+    "nanoid": "^5.0.7"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}
