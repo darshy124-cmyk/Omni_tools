@@ -57,9 +57,22 @@ export const POST = async (request: NextRequest) => {
     inputText = body.text || body.url || "";
     inputSize = Buffer.byteLength(inputText);
   } else if (tool.kind === "multiFile" && Array.isArray(body.base64s)) {
+    if (body.base64s.length === 0) {
+      return NextResponse.json({ error: "Missing files" }, { status: 400 });
+    }
     const buffers = body.base64s.map((value: string) => Buffer.from(value, "base64"));
-    for (const buffer of buffers) {
-      const validation = validateFile(buffer, tool.limits.maxBytes);
+    for (let index = 0; index < buffers.length; index += 1) {
+      const buffer = buffers[index];
+      const filename =
+        Array.isArray(body.filenames) && body.filenames.length === buffers.length
+          ? body.filenames[index]
+          : undefined;
+      const validation = validateFile(
+        buffer,
+        tool.limits.maxBytes,
+        filename,
+        body.contentType
+      );
       if (!validation.ok) {
         return NextResponse.json({ error: validation.error }, { status: 400 });
       }
@@ -70,7 +83,12 @@ export const POST = async (request: NextRequest) => {
     }
   } else if (body.base64) {
     const buffer = Buffer.from(body.base64, "base64");
-    const validation = validateFile(buffer, tool.limits.maxBytes);
+    const validation = validateFile(
+      buffer,
+      tool.limits.maxBytes,
+      body.filename,
+      body.contentType
+    );
     if (!validation.ok) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }

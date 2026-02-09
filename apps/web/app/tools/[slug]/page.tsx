@@ -10,6 +10,8 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
   const [fileBase64, setFileBase64] = useState<string | null>(null);
   const [fileBase64s, setFileBase64s] = useState<string[]>([]);
   const [result, setResult] = useState<string | null>(null);
+  const [filenames, setFilenames] = useState<string[]>([]);
+  const [outputUrl, setOutputUrl] = useState<string | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,26 +30,35 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
   const handleFile = async (file: File | null) => {
     if (!file) return;
     setFileBase64(await toBase64(file));
+    setFilenames([file.name]);
   };
 
   const handleFiles = async (files: FileList | null) => {
     if (!files) return;
     const values: string[] = [];
+    const names: string[] = [];
     for (const file of Array.from(files)) {
       values.push(await toBase64(file));
+      names.push(file.name);
     }
     setFileBase64s(values);
+    setFilenames(names);
   };
 
   const runJob = async () => {
     setError(null);
     setResult(null);
+    setOutputUrl(null);
     const payload: any = { slug: tool.slug };
     if (tool.kind === "text") payload.text = text;
     if (tool.kind === "url") payload.url = text;
-    if (tool.kind === "multiFile") payload.base64s = fileBase64s;
+    if (tool.kind === "multiFile") {
+      payload.base64s = fileBase64s;
+      payload.filenames = filenames;
+    }
     if (tool.kind !== "text" && tool.kind !== "url" && tool.kind !== "multiFile") {
       payload.base64 = fileBase64;
+      payload.filename = filenames[0];
     }
     const response = await fetch("/api/jobs", {
       method: "POST",
@@ -61,6 +72,18 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
     }
     setJobId(data.id);
     setResult(`Job queued: ${data.id}`);
+    const poll = async () => {
+      const response = await fetch(`/api/jobs/${data.id}`);
+      if (!response.ok) return;
+      const job = await response.json();
+      if (job.outputText) setResult(job.outputText);
+      if (job.outputUrl) setOutputUrl(job.outputUrl);
+      if (["completed", "failed", "expired", "cancelled"].includes(job.status)) {
+        return;
+      }
+      setTimeout(poll, 2000);
+    };
+    poll();
   };
 
   return (
@@ -111,6 +134,14 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
         </button>
         {error && <div className="mt-3 text-sm text-red-500">{error}</div>}
         {result && <div className="mt-3 text-sm text-gray-700">{result}</div>}
+        {outputUrl && (
+          <a
+            className="mt-3 inline-flex text-sm text-indigo-600 hover:underline"
+            href={outputUrl}
+          >
+            Download output
+          </a>
+        )}
         {jobId && (
           <div className="mt-3 text-sm text-gray-500">
             Stream progress at <code>/api/stream?jobId={jobId}</code>

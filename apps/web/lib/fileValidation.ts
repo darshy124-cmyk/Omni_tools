@@ -9,6 +9,13 @@ const signatures: Record<string, number[]> = {
 };
 
 const allowedExtensions = new Set([
+  "docx",
+  "txt",
+  "md",
+  "markdown",
+  "html",
+  "htm",
+  "csv",
   "pdf",
   "png",
   "jpg",
@@ -18,6 +25,19 @@ const allowedExtensions = new Set([
   "mp4",
   "zip"
 ]);
+
+const isMostlyText = (buffer: Buffer) => {
+  const sample = buffer.subarray(0, 512);
+  let printable = 0;
+  for (const byte of sample) {
+    if (byte === 9 || byte === 10 || byte === 13) {
+      printable += 1;
+    } else if (byte >= 32 && byte <= 126) {
+      printable += 1;
+    }
+  }
+  return sample.length > 0 && printable / sample.length > 0.85;
+};
 
 export const validateFile = (
   buffer: Buffer,
@@ -31,7 +51,7 @@ export const validateFile = (
   const match = Object.values(signatures).some((sig) =>
     sig.every((byte, idx) => buffer[idx] === byte)
   );
-  if (!match) {
+  if (!match && !isMostlyText(buffer)) {
     return { ok: false, error: "Unsupported file type" };
   }
   if (filename) {
