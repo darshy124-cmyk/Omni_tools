@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum JobStatus {
+  created
+  awaiting_upload
+  queued
+  processing
+  completed
+  failed
+  cancelled
+  expired
+}
+
+model Tool {
+  id            String   @id
+  slug          String   @unique
+  name          String
+  description   String
+  category      String
+  tags          String[]
+  kind          String
+  isAi          Boolean
+  tier          String
+  seoTitle      String
+  seoDescription String
+  examples      String[]
+  faq           String[]
+  engineKey     String
+  engineParams  Json
+  limits        Json
+  createdAt     DateTime @default(now())
+}
+
+model Job {
+  id          String   @id @default(uuid())
+  toolId      String
+  status      JobStatus
+  progress    Int
+  stage       String
+  inputKey    String?
+  inputKeys   String[] @default([])
+  inputText   String?
+  outputKey   String?
+  outputText  String?
+  error       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  expiresAt   DateTime
+  tool        Tool     @relation(fields: [toolId], references: [id])
+}
+
+model UsageLimit {
+  id        String   @id @default(uuid())
+  userId    String
+  plan      String
+  day       DateTime
+  jobsUsed  Int
+  costUsed  Int
+
+  @@unique([userId, day])
+}
+
+model User {
+  id       String   @id @default(uuid())
+  email    String   @unique
+  name     String?
+  role     String   @default("user")
+  createdAt DateTime @default(now())
+}

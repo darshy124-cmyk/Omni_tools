@@ -1,0 +1,31 @@
+FROM node:20-bullseye
+WORKDIR /app
+RUN apt-get update && apt-get install -y \\
+    libcairo2-dev \\
+    libjpeg-dev \\
+    libpango1.0-dev \\
+    libgif-dev \\
+    librsvg2-dev \\
+    libnss3 \\
+    libx11-xcb1 \\
+    libxcomposite1 \\
+    libxdamage1 \\
+    libxrandr2 \\
+    libasound2 \\
+    libatk-bridge2.0-0 \\
+    libgtk-3-0 \\
+    libgbm1 \\
+    libdrm2 \\
+    libxshmfence1 \\
+    && rm -rf /var/lib/apt/lists/*
+RUN corepack enable
+COPY package.json pnpm-workspace.yaml ./
+COPY apps ./apps
+COPY packages ./packages
+COPY prisma ./prisma
+RUN pnpm install --frozen-lockfile=false
+RUN pnpm -C packages/engines exec playwright install --with-deps chromium
+WORKDIR /app/apps/web
+RUN pnpm build
+EXPOSE 3000
+CMD ["pnpm", "start"]
