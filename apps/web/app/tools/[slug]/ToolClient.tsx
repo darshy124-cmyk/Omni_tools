@@ -1,10 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import type { ToolDefinition } from "@omni/core";
-
 type ToolClientProps = {
-  tool: ToolDefinition;
+  tool: {
+    slug: string;
+    name: string;
+    description: string;
+    category: string;
+    kind: string;
+    tier: string;
+    engineKey: string;
+  };
 };
 
 export default function ToolClient({ tool }: ToolClientProps) {
@@ -98,7 +104,7 @@ export default function ToolClient({ tool }: ToolClientProps) {
         <div className="mt-4 grid gap-2 text-sm text-gray-600">
           <div>Kind: {tool.kind}</div>
           <div>Tier: {tool.tier}</div>
-          <div>Engine: {tool.runner.engineKey}</div>
+          <div>Engine: {tool.engineKey}</div>
         </div>
       </div>
       <div className="rounded-lg border bg-white p-6">

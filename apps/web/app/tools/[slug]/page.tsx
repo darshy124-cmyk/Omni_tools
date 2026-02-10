@@ -5,5 +5,17 @@ import ToolClient from "./ToolClient";
 export default function ToolPage({ params }: { params: { slug: string } }) {
   const tool = getToolBySlug(params.slug);
   if (!tool) return notFound();
-  return <ToolClient tool={tool} />;
+  return (
+    <ToolClient
+      tool={{
+        slug: tool.slug,
+        name: tool.name,
+        description: tool.description,
+        category: tool.category,
+        kind: tool.kind,
+        tier: tool.tier,
+        engineKey: tool.runner.engineKey
+      }}
+    />
+  );
 }
